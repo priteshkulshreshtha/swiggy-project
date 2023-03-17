@@ -3,6 +3,7 @@ package com.swiggy.FeignClientMicroService.client;
 import com.swiggy.FeignClientMicroService.beans.request.restaurantClient.NewFoodItemRequest;
 import com.swiggy.FeignClientMicroService.beans.request.restaurantClient.NewRestaurantRequest;
 import com.swiggy.FeignClientMicroService.beans.response.ResponseWrapper;
+import com.swiggy.FeignClientMicroService.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name="restaurant", url = "http://localhost:8200")
+@FeignClient(name="restaurant", url = "http://localhost:8200", configuration = FeignClientConfiguration.class)
 public interface RestaurantClient {
 
     @GetMapping("/restaurant/{id}")

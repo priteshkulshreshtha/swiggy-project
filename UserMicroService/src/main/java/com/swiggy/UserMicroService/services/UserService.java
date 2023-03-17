@@ -29,7 +29,7 @@ public class UserService {
     private WebClient.Builder webClient;
 
     @Autowired
-    private WebClientUtils webClientUtils
+    private WebClientUtils webClientUtils;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -87,13 +87,13 @@ public class UserService {
     }
 
     public List<FoodItemRequest> getFoodItems(long restaurantId) {
-        RequestWrapper request = webClientUtils.getRequest(
+        ResponseWrapper responseWrapper = webClientUtils.getRequest(
                 "http://localhost:8200/restaurant/" + restaurantId + "/food",
                 ResponseWrapper.class
         );
 
         try {
-            return objectMapper.convertValue(request.getData(), new TypeReference<List<FoodItemRequest>>() {});
+            return objectMapper.convertValue(responseWrapper.getData(), new TypeReference<List<FoodItemRequest>>() {});
         } catch (ClassCastException e) {
             throw new BadResponseDataException("Bad response from restaurant microservice");
         }

@@ -4,12 +4,13 @@ import com.swiggy.FeignClientMicroService.beans.request.userClient.CartItemReque
 import com.swiggy.FeignClientMicroService.beans.response.ResponseWrapper;
 import com.swiggy.FeignClientMicroService.beans.response.userClient.NewUserProfileRequest;
 import com.swiggy.FeignClientMicroService.beans.response.userClient.UserProfileRequest;
+import com.swiggy.FeignClientMicroService.config.FeignClientConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@FeignClient(name="user", url="http://localhost:8100")
+@FeignClient(name="user", url="http://localhost:8100", configuration = FeignClientConfiguration.class)
 public interface UserClient {
 
     @GetMapping("/user/{userId}")

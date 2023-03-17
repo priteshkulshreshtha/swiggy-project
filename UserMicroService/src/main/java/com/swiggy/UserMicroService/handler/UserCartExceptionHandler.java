@@ -12,14 +12,13 @@ public class UserCartExceptionHandler {
 
     @ExceptionHandler(RestaurantMismatchException.class)
     public ResponseEntity<ExceptionResponseBody> handleRestaurantMismatchException(RestaurantMismatchException e) {
-        HttpStatus httpStatus = HttpStatus.CONFLICT;
 
         ExceptionResponseBody response = new ExceptionResponseBody(
                 e.getMessage(),
                 RestaurantMismatchException.class.toString()
         );
 
-        return new ResponseEntity<>(response, httpStatus);
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
 
     }
 

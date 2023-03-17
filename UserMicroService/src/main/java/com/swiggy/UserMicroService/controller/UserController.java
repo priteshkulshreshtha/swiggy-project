@@ -29,7 +29,7 @@ public class UserController {
                 "New user profile created",
                 HttpStatus.CREATED
         );
-    }z
+    };
 
     @PostMapping("/update_user")
     public ResponseEntity<ResponseWrapper> updateUserProfileController(@RequestBody UserProfileRequest newUserProfile) {

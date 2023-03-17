@@ -6,10 +6,12 @@ import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.io.Serializable;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponseWrapper {
+public class ResponseWrapper implements Serializable {
     private boolean status;
     private Object data;
     private String message;
