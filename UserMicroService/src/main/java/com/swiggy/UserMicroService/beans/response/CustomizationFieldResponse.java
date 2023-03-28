@@ -1,4 +1,4 @@
-package com.swiggy.RestaurantMicroService.beans.request;
+package com.swiggy.UserMicroService.beans.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class NewFoodItemRequest {
-    private String name;
+public class CustomizationFieldResponse {
+    private long fieldId;
+    private String fieldName;
     private String description;
     private int price;
-    private boolean createBaseCategory;
 
 }

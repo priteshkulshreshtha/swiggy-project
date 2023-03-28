@@ -7,8 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class NewRestaurantRequest {
-    private String cityName;
-    private String name;
+public class CustomizationFieldRequest {
+    private String fieldName;
+    private String description;
+    private int price;
 
 }

@@ -57,19 +57,19 @@ public class UserController {
         );
     }
 
-    @GetMapping("restaurant/{restaurantId}/food_items")
-    public ResponseEntity<ResponseWrapper> getFoodItemsByRestaurant(@PathVariable long restaurantId) {
-        List<FoodItemResponse> foodItems = new ArrayList<>();
-        userService.getFoodItems(restaurantId).stream().forEach(foodItem -> {
-            foodItems.add(new FoodItemResponse(foodItem));
-        });
-        if (foodItems.isEmpty())
+    @GetMapping("restaurant/{restaurantId}/menu")
+    public ResponseEntity<ResponseWrapper> getMenu(@PathVariable long restaurantId) {
+        List<FoodItemResponse> menu = userService.getMenu(restaurantId);
+
+        if (menu.isEmpty())
             return new ResponseWrapper().getResponse(
-                foodItems,
+                menu,
                 "No food Items present",
                 HttpStatus.OK
             );
-        return new ResponseWrapper().getResponse(foodItems,"Fetched list of food items", HttpStatus.OK);
+
+
+        return new ResponseWrapper().getResponse(menu,"Fetched list of food items", HttpStatus.OK);
     }
 
 }

@@ -3,7 +3,6 @@ package com.swiggy.DeliveryAgentMicroService.controller;
 import com.swiggy.DeliveryAgentMicroService.beans.request.DeliveryAgentRequest;
 import com.swiggy.DeliveryAgentMicroService.beans.request.NewDeliveryAgentRequest;
 import com.swiggy.DeliveryAgentMicroService.beans.response.DeliveryAgentResponse;
-import com.swiggy.DeliveryAgentMicroService.beans.response.ExceptionResponseBody;
 import com.swiggy.DeliveryAgentMicroService.beans.response.RequestOrderResponse;
 import com.swiggy.DeliveryAgentMicroService.beans.response.ResponseWrapper;
 import com.swiggy.DeliveryAgentMicroService.entity.DeliveryAgent;

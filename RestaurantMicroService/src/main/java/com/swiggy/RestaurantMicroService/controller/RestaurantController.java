@@ -52,9 +52,9 @@ public class RestaurantController {
         );
     }
 
-    @GetMapping("/restaurant/{restaurantId}/food")
-    public ResponseEntity<ResponseWrapper> getFoodItemsByRestaurant(@PathVariable long restaurantId) {
-        List<FoodItemResponse> foodItemResponses = restaurantService.getFoodItemsByRestaurant(restaurantId);
+    @GetMapping("/restaurant/{restaurantId}/menu")
+    public ResponseEntity<ResponseWrapper> getMenu(@PathVariable long restaurantId) {
+        List<FoodItemResponse> foodItemResponses = restaurantService.getMenu(restaurantId);
 
         if (foodItemResponses.isEmpty())
             return new ResponseWrapper().getResponse(

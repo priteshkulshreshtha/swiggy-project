@@ -18,7 +18,7 @@ public class FoodItemController {
 
     @GetMapping("/food_item/{foodId}")
     public ResponseEntity<ResponseWrapper> getFoodItemById(@PathVariable long foodId) {
-        FoodItemResponse foodItem = new FoodItemResponse(foodItemService.getFoodItemById(foodId));
+        FoodItemResponse foodItem = foodItemService.getFoodItem(foodId);
         return new ResponseWrapper().getResponse(foodItem, "Fetched food item",HttpStatus.OK);
     }
 }

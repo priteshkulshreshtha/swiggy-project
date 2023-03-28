@@ -5,11 +5,13 @@ import com.swiggy.RestaurantMicroService.beans.request.NewFoodItemRequest;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Set;
+
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"restaurant"})
+@JsonIgnoreProperties({"restaurant", "customizationFields", "customizationCategories"})
 public class FoodItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,16 +19,18 @@ public class FoodItem {
     private long id;
     private String name;
     private String description;
-    private int price;
 
     @ManyToOne()
     @JoinColumn(name="restaurant_id")
     private Restaurant restaurant;
+    @OneToMany(mappedBy = "foodItem")
+    private Set<CustomizationCategory> customizationCategories;
+    @OneToMany(mappedBy = "foodItem")
+    private Set<CustomizationField> customizationFields;
 
     public FoodItem(NewFoodItemRequest newFoodItemRequestBean) {
         this.setName(newFoodItemRequestBean.getName());
         this.setDescription(newFoodItemRequestBean.getDescription());
-        this.setPrice(newFoodItemRequestBean.getPrice());
     }
 
     public FoodItem(NewFoodItemRequest newFoodItemRequestBean, Restaurant restaurant) {

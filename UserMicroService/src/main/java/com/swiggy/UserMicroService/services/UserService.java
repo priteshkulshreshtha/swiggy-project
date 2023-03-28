@@ -3,6 +3,7 @@ package com.swiggy.UserMicroService.services;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swiggy.UserMicroService.beans.request.*;
+import com.swiggy.UserMicroService.beans.response.FoodItemResponse;
 import com.swiggy.UserMicroService.beans.response.ResponseWrapper;
 import com.swiggy.UserMicroService.entities.UserCart;
 import com.swiggy.UserMicroService.entities.UserProfile;
@@ -86,16 +87,17 @@ public class UserService {
         }
     }
 
-    public List<FoodItemRequest> getFoodItems(long restaurantId) {
+    public List<FoodItemResponse> getMenu(long restaurantId) {
+
         ResponseWrapper responseWrapper = webClientUtils.getRequest(
-                "http://localhost:8200/restaurant/" + restaurantId + "/food",
+                "http://localhost:8200/restaurant/" + restaurantId + "/menu",
                 ResponseWrapper.class
         );
 
         try {
-            return objectMapper.convertValue(responseWrapper.getData(), new TypeReference<List<FoodItemRequest>>() {});
-        } catch (ClassCastException e) {
-            throw new BadResponseDataException("Bad response from restaurant microservice");
+            return objectMapper.convertValue(responseWrapper.getData(), new TypeReference<List<FoodItemResponse>>() {});
+        } catch (RuntimeException e) {
+            throw new BadResponseDataException("Bad response from restaurant microservice", e);
         }
 
     }

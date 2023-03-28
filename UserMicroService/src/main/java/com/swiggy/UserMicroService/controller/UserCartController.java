@@ -38,7 +38,8 @@ public class UserCartController {
 
         userCartService.addFoodItemService(
                 userProfile,
-                request.getFoodId()
+                request.getFoodId(),
+                request.getCustomizationFieldIds()
         );
 
         return new ResponseWrapper().getResponse(null, "Item successfully added to cart", HttpStatus.OK);

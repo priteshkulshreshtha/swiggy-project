@@ -3,6 +3,7 @@ package com.swiggy.UserMicroService.services;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swiggy.UserMicroService.beans.request.FoodItemRequest;
+import com.swiggy.UserMicroService.beans.response.FoodItemResponse;
 import com.swiggy.UserMicroService.beans.response.PlaceOrderBody;
 import com.swiggy.UserMicroService.beans.response.ResponseWrapper;
 import com.swiggy.UserMicroService.entities.CartItem;
@@ -11,13 +12,11 @@ import com.swiggy.UserMicroService.entities.UserProfile;
 import com.swiggy.UserMicroService.exception.ResourceNotFoundException;
 import com.swiggy.UserMicroService.exception.RestaurantMismatchException;
 import com.swiggy.UserMicroService.repository.CartItemRepository;
+import com.swiggy.UserMicroService.repository.CustomizationFieldRepository;
 import com.swiggy.UserMicroService.repository.UserCartRepository;
 import com.swiggy.UserMicroService.util.WebClientUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
@@ -41,31 +40,33 @@ public class UserCartService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    CustomizationFieldRepository fieldRepository;
+
+
     public void clearCartService(long userId) {
         UserProfile userProfile = userService.getUserById(userId);
         UserCart userCart = userProfile.getUserCart();
         cartItemRepository.deleteAllByUserCart(userCart);
     }
 
-    public void addFoodItemService(UserProfile userProfile, long foodId) {
+    public void addFoodItemService(UserProfile userProfile, long foodId, List<Long> fieldIds) {
 
 
         long userCartRestaurantId = userProfile.getUserCart().getRestaurantId();
+
         UserCart userCart = userProfile.getUserCart();
 
-        FoodItemRequest foodItem = this.getFoodItemById(foodId);
+        FoodItemResponse foodItem = this.getFoodItemById(foodId);
+
+        if (userCartRestaurantId != 0 && userCartRestaurantId != foodItem.getRestaurantId())
+            throw new RestaurantMismatchException("Food items from multiple restaurants cannot be selected");
 
         if (userCartRestaurantId == 0) {
             userCart.setRestaurantId(foodItem.getRestaurantId());
-            this.addToOrderItems(foodItem, userCart);
-            userCartRepository.save(userCart);
-            return;
         }
 
-        if(userCartRestaurantId != foodItem.getRestaurantId())
-            throw new RestaurantMismatchException("Food items from multiple restaurants cannot be selected");
-
-        this.addToOrderItems(foodItem, userCart);
+        this.addToOrderItems(foodItem, userCart, fieldIds);
         userCartRepository.save(userCart);
 
     }
@@ -77,39 +78,46 @@ public class UserCartService {
 
     public void removeFoodItemService(UserProfile userProfile, long foodId) {
         UserCart userCart = userProfile.getUserCart();
-        this.removeFoodItem(this.getFoodItemById(foodId), userCart);
+
+        // TODO: change this
+
+//        this.removeFoodItem(this.getFoodItemById(foodId), userCart);
         userCartRepository.save(userCart);
     }
 
-    public FoodItemRequest getFoodItemById(long foodId) {
+    public FoodItemResponse getFoodItemById(long foodId) {
 
         ResponseWrapper response = webClientUtils.getRequest(
                 "http://localhost:8200/food_item/" + foodId,
                 ResponseWrapper.class
         );
 
-        return objectMapper.convertValue(response.getData(), FoodItemRequest.class);
+        return objectMapper.convertValue(response.getData(), FoodItemResponse.class);
 
     }
 
 
-    public void addToOrderItems(FoodItemRequest foodItem, UserCart userCart) {
+    public void addToOrderItems(FoodItemRequest foodItem, UserCart userCart, List<Long> fieldIds) {
 
-        Optional<CartItem> cartItem = cartItemRepository.findFirstByFoodIdAndUserCart(foodItem.getId(), userCart);
+        Optional<CartItem> cartItem = fieldRepository.findFirstByFieldIdAndUserCart()
+
+        CartItem newCartItem;
 
         if (cartItem.isEmpty()) {
-            CartItem newCartItem = new CartItem(foodItem);
+            newCartItem = new CartItem(foodItem);
             newCartItem.setUserCart(userCart);
-            userCart.setBillAmount(userCart.getBillAmount()+ foodItem.getPrice());
-            userCartRepository.save(userCart);
-            cartItemRepository.save(newCartItem);
         }
         else {
-            cartItem.get().setQuantity(cartItem.get().getQuantity() + 1);
-            userCart.setBillAmount(userCart.getBillAmount()+ foodItem.getPrice());
+            newCartItem = cartItem.get();
+            newCartItem.setQuantity(cartItem.get().getQuantity() + 1);
+            newCartItem.setBasePrice(userCart.getBillAmount()+ foodItem.getPrice());
             userCartRepository.save(userCart);
             cartItemRepository.save(cartItem.get());
         }
+
+        userCart.setBillAmount(userCart.getBillAmount()+ foodItem.getPrice());
+        userCartRepository.save(userCart);
+        cartItemRepository.save(newCartItem);
     }
 
     public void removeFoodItem(FoodItemRequest foodItem, UserCart userCart) {

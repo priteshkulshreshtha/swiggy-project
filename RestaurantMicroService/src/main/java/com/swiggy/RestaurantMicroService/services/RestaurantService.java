@@ -2,11 +2,17 @@ package com.swiggy.RestaurantMicroService.services;
 
 import com.swiggy.RestaurantMicroService.beans.request.NewFoodItemRequest;
 import com.swiggy.RestaurantMicroService.beans.request.NewRestaurantRequest;
+import com.swiggy.RestaurantMicroService.beans.response.CustomizationCategoryResponse;
+import com.swiggy.RestaurantMicroService.beans.response.CustomizationFieldResponse;
 import com.swiggy.RestaurantMicroService.beans.response.FoodItemResponse;
+import com.swiggy.RestaurantMicroService.entity.CustomizationCategory;
+import com.swiggy.RestaurantMicroService.entity.CustomizationField;
 import com.swiggy.RestaurantMicroService.entity.FoodItem;
 import com.swiggy.RestaurantMicroService.entity.Restaurant;
 import com.swiggy.RestaurantMicroService.exception.ResourceAlreadyPresentException;
 import com.swiggy.RestaurantMicroService.exception.ResourceNotFoundException;
+import com.swiggy.RestaurantMicroService.repository.CustomizationCategoryRepository;
+import com.swiggy.RestaurantMicroService.repository.CustomizationFieldRepository;
 import com.swiggy.RestaurantMicroService.repository.FoodItemRepository;
 import com.swiggy.RestaurantMicroService.repository.RestaurantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +25,13 @@ import java.util.Optional;
 @Service
 public class RestaurantService {
     @Autowired
-    RestaurantRepository restaurantRepository;
+    private RestaurantRepository restaurantRepository;
     @Autowired
-    FoodItemRepository foodItemRepository;
+    private FoodItemRepository foodItemRepository;
+    @Autowired
+    private CustomizationCategoryRepository categoryRepository;
+    @Autowired
+    private CustomizationFieldRepository fieldRepository;
 
     public List<Restaurant> getRestaurantByCity(String cityName) {
         return restaurantRepository.findByCityName(cityName);
@@ -33,17 +43,46 @@ public class RestaurantService {
         return restaurant.get();
     }
 
-    public List<FoodItemResponse> getFoodItemsByRestaurant(long restaurantId) {
+    public List<FoodItemResponse> getMenu(long restaurantId) {
         Restaurant restaurant = getRestaurantById(restaurantId);
         List<FoodItemResponse> foodItems = new ArrayList<>();
+
+
         foodItemRepository.findByRestaurant(restaurant).stream().forEach(foodItem -> {
-            foodItems.add(new FoodItemResponse(foodItem));
+            FoodItemResponse foodItemResponse = new FoodItemResponse(foodItem);
+            foodItemResponse.setCustomizationCategoryList(getCategoryList(foodItem));
+            foodItems.add(foodItemResponse);
         });
+
+
         return foodItems;
     }
 
+    public List<CustomizationCategoryResponse> getCategoryList(FoodItem foodItem) {
+        List<CustomizationCategoryResponse> categoryResponseList = new ArrayList<>();
+
+        categoryRepository.findAllByFoodItem(foodItem).forEach(customizationCategory -> {
+            CustomizationCategoryResponse category = new CustomizationCategoryResponse(customizationCategory);
+            category.setFields(getFieldList(customizationCategory));
+            categoryResponseList.add(category);
+        });
+
+        return categoryResponseList;
+    }
+
+    private List<CustomizationFieldResponse> getFieldList(CustomizationCategory customizationCategory) {
+
+        List<CustomizationFieldResponse> fieldResponseList = new ArrayList<>();
+
+        fieldRepository.findAllByCustomizationCategory(customizationCategory).forEach(customizationField -> {
+            fieldResponseList.add(new CustomizationFieldResponse(customizationField));
+        });
+
+        return fieldResponseList;
+
+    }
+
     public void createRestaurant(NewRestaurantRequest restaurantDetails) {
-        //TODO: Check for duplicates
 
         Optional<Restaurant> restaurant = restaurantRepository.findFirstByCityNameAndName(
                 restaurantDetails.getCityName(),
@@ -67,8 +106,21 @@ public class RestaurantService {
             throw new ResourceAlreadyPresentException("The food item is already present in the restaurant, change name");
 
         FoodItem newFoodItem = new FoodItem(foodDetails, restaurant);
-
         foodItemRepository.save(newFoodItem);
 
+        if (foodDetails.isCreateBaseCategory()) {
+            CustomizationCategory category = new CustomizationCategory("Base", newFoodItem);
+
+            CustomizationField field = new CustomizationField(
+                    "Base",
+                    "",
+                    foodDetails.getPrice(),
+                    category,
+                    newFoodItem
+            );
+
+            categoryRepository.save(category);
+            fieldRepository.save(field);
+        }
     }
 }
